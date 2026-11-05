@@ -79,6 +79,8 @@ podman run --rm --user 0 -v "$PWD:/work:Z" -w /work docker.io/accupara/bbndk bas
 
 ## 安装
 
+> 不想自己编译？直接下载 [`dist/deepseek.bar`](dist/deepseek.bar)（141 KB，已构建好）。
+
 ### 前提
 
 - 手机已 **root**（AutoRoot v4，能 SSH 进 `root@169.254.0.1`）
