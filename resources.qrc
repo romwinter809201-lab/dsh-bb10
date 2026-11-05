@@ -1,8 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>msglabel.qml</file>
         <file>ca.pem</file>
-        <file>bubble_ai.png</file>
-        <file>bubble_me.png</file>
     </qresource>
 </RCC>

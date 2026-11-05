@@ -25,6 +25,8 @@
 | 多轮上下文 | ✅ |
 | API Key 本地保存 | ✅ |
 | 深色聊天界面 | ✅ |
+| 助手回答满宽纯文本 | ✅ |
+| 自动滚动到底部 | ✅ |
 | 流式输出（逐字） | ❌ 未实现 |
 | 历史记录持久化 | ❌ 未实现 |
 | 图片/文件 | ❌ 不支持 |
@@ -128,7 +130,8 @@ ssh root@169.254.0.1 "/var/rootdata/installer /accounts/1000/shared/downloads/in
 ```
 .
 ├── src/main.cpp          # C++：应用入口、QSettings、网络层
-├── main.qml              # QML：聊天界面
+├── main.qml              # QML：页面、输入栏、网络回调
+├── msglabel.qml          # QML：单条消息（助手纯文字 / 用户气泡）
 ├── resources.qrc         # 把 QML 和 CA 证书编译进二进制
 ├── ca.pem                # Mozilla 根证书集合（见下方许可）
 ├── deepseek.pro          # qmake 工程
@@ -143,7 +146,7 @@ ssh root@169.254.0.1 "/var/rootdata/installer /accounts/1000/shared/downloads/in
 ## 已知限制
 
 - **只支持 BB10 10.3.3**（descriptor 最低版本，其他版本未测试）
-- **无圆角气泡**：Cascades 没有可用的圆角绘制能力
+- **无圆角气泡**：Cascades 1.2/1.3 都没有暴露可用的圆角绘制类型
 - **不支持流式输出**：一次性返回，长回答等待感明显
 - **上下文只在内存**：关掉 App 就丢
 - **仅 Q20 实测**

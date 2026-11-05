@@ -5,6 +5,8 @@ Page {
     property string apiKey: Store.get("apiKey")
     property variant history: []
     property bool busy: false
+    property variant lastItem: null
+    property variant msgComponent: null
 
     titleBar: TitleBar {
         title: "DeepSeek"
@@ -18,58 +20,19 @@ Page {
         layout: DockLayout {}
         background: Color.create("#141416")
 
-        // ---------- 消息列表 ----------
         ScrollView {
             id: scroller
             horizontalAlignment: HorizontalAlignment.Fill
             verticalAlignment: VerticalAlignment.Fill
-            scrollViewProperties {
-                scrollMode: ScrollMode.Vertical
-            }
 
-            ListView {
-                id: chat
-                dataModel: messages
+            Container {
+                id: feed
+                layout: StackLayout {}
                 horizontalAlignment: HorizontalAlignment.Fill
-
-                listItemComponents: [
-                    ListItemComponent {
-                        type: ""
-                        Container {
-                            horizontalAlignment: HorizontalAlignment.Fill
-                            leftPadding: 10
-                            rightPadding: 10
-                            topPadding: 5
-                            bottomPadding: 5
-
-                            Container {
-                                horizontalAlignment: ListItemData.mine ? HorizontalAlignment.Right : HorizontalAlignment.Left
-                                maxWidth: 520
-
-                                background: ListItemData.mine ? Color.create("#3a6ea5") : Color.create("#2a2a30")
-                                layout: StackLayout {}
-
-                                topPadding: 12
-                                bottomPadding: 12
-                                leftPadding: 14
-                                rightPadding: 14
-
-                                Label {
-                                    text: ListItemData.text
-                                    multiline: true
-                                    textStyle {
-                                        color: ListItemData.mine ? Color.create("#eaf2f8") : Color.create("#e4e4e6")
-                                        fontSize: FontSize.Small
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ]
+                bottomPadding: 108
             }
         }
 
-        // ---------- 输入区 ----------
         Container {
             verticalAlignment: VerticalAlignment.Bottom
             horizontalAlignment: HorizontalAlignment.Fill
@@ -88,15 +51,15 @@ Page {
                     input.submitKey: SubmitKey.None
                     input.flags: TextInputFlag.SpellCheckOff
                     layoutProperties: StackLayoutProperties { spaceQuota: 1 }
-                    minHeight: 96
-                    maxHeight: 240
+                    preferredHeight: 76
+                    maxHeight: 76
                 }
 
                 Button {
                     text: root.busy ? "…" : "发送"
                     verticalAlignment: VerticalAlignment.Bottom
-                    preferredWidth: 96
-                    preferredHeight: 72
+                    preferredWidth: 100
+                    preferredHeight: 76
                     enabled: !root.busy
                     onClicked: root.send()
                 }
@@ -104,12 +67,7 @@ Page {
         }
     }
 
-    // ---------- 设置面板 ----------
     attachedObjects: [
-        ArrayDataModel {
-            id: messages
-        },
-
         Sheet {
             id: settings
             content: Page {
@@ -117,9 +75,7 @@ Page {
                     title: "设置"
                     dismissAction: ActionItem {
                         title: "关闭"
-                        onTriggered: {
-                            settings.close();
-                        }
+                        onTriggered: settings.close()
                     }
                     acceptAction: ActionItem {
                         title: "保存"
@@ -140,7 +96,7 @@ Page {
                     }
                     TextField {
                         id: keyField
-                        hintText: "sk-... "
+                        hintText: "sk-..."
                         text: root.apiKey
                         input.flags: TextInputFlag.SpellCheckOff
                     }
@@ -157,16 +113,55 @@ Page {
         }
     ]
 
+    function scrollToEnd() {
+        try {
+            scroller.scrollToPoint(0, 100000);
+        } catch (e) {
+            // 该版本不支持滚动 API 时静默跳过
+        }
+    }
+
+    function cleanMarkdown(t) {
+        var out = "" + t;
+        out = out.replace(/```[a-zA-Z]*\n?/g, "");
+        out = out.replace(/\*\*([^*\n]+)\*\*/g, "$1");
+        out = out.replace(/__([^_\n]+)__/g, "$1");
+        out = out.replace(/`([^`\n]+)`/g, "$1");
+        out = out.replace(/^#{1,6}\s*/gm, "");
+        out = out.replace(/^\s*[-*]\s+/gm, "• ");
+        out = out.replace(/^\s*\d+\.\s+/gm, "");
+        return out;
+    }
+
+    function historyJson() {
+        var parts = [];
+        for (var i = 0; i < history.length; ++i) {
+            parts.push('{"role":"' + history[i].role + '","content":'
+                + JSON.stringify(history[i].content) + '}');
+        }
+        return "[" + parts.join(",") + "]";
+    }
 
     function addMessage(text, mine) {
-        var m = { text: text, mine: mine };
-        messages.insert(0, m);   // Cascades ListView 头部插入
-        return m;
+        if (!root.msgComponent) {
+            root.msgComponent = Qt.createComponent("qrc:/msglabel.qml");
+        }
+        if (!root.msgComponent) {
+            return null;
+        }
+        var obj = root.msgComponent.createObject(feed, { "text": text, "mine": mine });
+        if (obj) {
+            feed.add(obj);
+            root.lastItem = obj;
+            scrollToEnd();
+        }
+        return obj;
     }
 
     function updateLast(text) {
-        if (messages.size() > 0) {
-            messages.replace(0, { text: text, mine: false });
+        if (root.lastItem) {
+            root.lastItem.text = text;
+            scrollToEnd();
         }
     }
 
@@ -175,29 +170,20 @@ Page {
         try {
             var r = JSON.parse(body);
             if (r.choices && r.choices.length > 0) {
-                var answer = r.choices[0].message.content;
-                root.updateLast(answer);
+                var answer = cleanMarkdown(r.choices[0].message.content);
+                updateLast(answer);
                 root.history = root.history.concat([{ role: "assistant", content: answer }]);
             } else {
-                root.updateLast("返回格式异常：" + ("" + body).substring(0, 100));
+                updateLast("返回格式异常：" + ("" + body).substring(0, 100));
             }
         } catch (e) {
-            root.updateLast("解析失败：" + e);
+            updateLast("解析失败：" + e);
         }
     }
 
     function handleError(err) {
         root.busy = false;
-        root.updateLast("网络错误：" + err);
-    }
-
-    function historyJson() {
-        var parts = [];
-        for (var i = 0; i < history.length; ++i) {
-            var m = history[i];
-            parts.push('{"role":"' + m.role + '","content":' + JSON.stringify(m.content) + '}');
-        }
-        return "[" + parts.join(",") + "]";
+        updateLast("网络错误：" + err);
     }
 
     function send() {
