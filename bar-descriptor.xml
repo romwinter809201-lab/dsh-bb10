@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<qnx xmlns="http://www.qnx.com/schemas/application/1.0">
+    <id>com.donggua.deepseek</id>
+    <name>DeepSeek</name>
+    <versionNumber>1.1.6</versionNumber>
+    <buildId>1</buildId>
+    <description>DeepSeek chat client for BlackBerry 10</description>
+    <author>donggua</author>
+    <initialWindow>
+        <systemChrome>none</systemChrome>
+        <transparent>false</transparent>
+        <autoOrient>false</autoOrient>
+    </initialWindow>
+    <asset path="main.qml">main.qml</asset>
+    <asset path="icon.png">icon.png</asset>
+    <configuration name="Device-Release">
+        <platformArchitecture>armle-v7</platformArchitecture>
+        <asset path="deepseek" entry="true" type="Qnx/Elf">deepseek</asset>
+    </configuration>
+    <icon>
+        <image>icon.png</image>
+    </icon>
+    <permission system="true">run_native</permission>
+    <permission>access_internet</permission>
+    <permission>access_shared</permission>
+    <env var="LD_LIBRARY_PATH" value="app/native/lib:/usr/lib:/usr/lib/qt4/lib"/>
+    <env var="QML_IMPORT_PATH" value="app/native/assets/imports:/usr/lib/qt4/imports"/>
+</qnx>

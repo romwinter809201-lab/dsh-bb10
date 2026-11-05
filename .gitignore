@@ -1,0 +1,13 @@
+# 构建产物
+Makefile
+*.o
+*.moc
+qrc_resources.cpp
+moc_*.cpp
+deepseek
+.qmake.stash
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
