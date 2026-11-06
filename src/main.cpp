@@ -13,6 +13,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QNetworkProxy>
 #include <QVariant>
 #include <QSslError>
 #include <cstdio>
@@ -143,6 +144,9 @@ Q_DECL_EXPORT int main(int argc, char **argv)
     qInstallMsgHandler(msgHandler);
 
     Application app(argc, argv);
+
+    // 忽略系统代理：WiFi 下配的代理在 4G 下不可达，会导致连接超时
+    QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::NoProxy));
 
     // 内置 CA 证书：BB10 的系统证书库不是 PEM，Qt 读不到
     QList<QSslCertificate> cas = QSslCertificate::fromPath(":/ca.pem");

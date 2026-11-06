@@ -27,6 +27,7 @@
 | 深色聊天界面 | ✅ |
 | 助手回答满宽纯文本 | ✅ |
 | 自动滚动到底部 | ✅ |
+| 忽略系统代理（4G 可用） | ✅ |
 | 流式输出（逐字） | ❌ 未实现 |
 | 历史记录持久化 | ❌ 未实现 |
 | 图片/文件 | ❌ 不支持 |
@@ -124,6 +125,7 @@ ssh root@169.254.0.1 "/var/rootdata/installer /accounts/1000/shared/downloads/in
 | 请求 `status=0` | 系统证书库不是 PEM，Qt 读不到 | 把 CA 证书打进 App（`qrc:/ca.pem`） |
 | HTTP 400 | `JSON.stringify` 对 QVariant 数组失效 | 手写 JSON 序列化 |
 | 应用装不上（未签名） | — | **root 设备不校验签名**，`-devMode` 打包即可 |
+| 4G 下 `NET error: 99` | 系统代理在移动网络下不可达 | 应用内 `QNetworkProxy::setApplicationProxy(NoProxy)` 强制直连 |
 
 ## 项目结构
 

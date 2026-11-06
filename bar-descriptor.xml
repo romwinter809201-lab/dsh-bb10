@@ -2,7 +2,7 @@
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
     <id>com.donggua.deepseek</id>
     <name>DeepSeek</name>
-    <versionNumber>1.2.9</versionNumber>
+    <versionNumber>1.3.0</versionNumber>
     <buildId>1</buildId>
     <description>DeepSeek chat client for BlackBerry 10</description>
     <author>donggua</author>
